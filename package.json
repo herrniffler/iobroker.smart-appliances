@@ -1,0 +1,59 @@
+{
+  "name": "iobroker.smart-appliances",
+  "version": "0.1.0",
+  "description": "Smart Appliances Scheduler with Tibber Integration",
+  "author": {
+    "name": "herrniffler",
+    "email": ""
+  },
+  "contributors": [],
+  "homepage": "",
+  "license": "MIT",
+  "keywords": [
+    "ioBroker",
+    "smart home",
+    "appliances",
+    "tibber",
+    "energy",
+    "scheduler"
+  ],
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "dependencies": {
+    "@iobroker/adapter-core": "^3.0.4"
+  },
+  "devDependencies": {
+    "@alcalzone/release-script": "^3.5.9",
+    "@alcalzone/release-script-plugin-iobroker": "^3.5.9",
+    "@alcalzone/release-script-plugin-license": "^3.5.9",
+    "@iobroker/testing": "^4.1.0",
+    "@types/node": "^18.15.0",
+    "eslint": "^8.57.0"
+  },
+  "main": "main.js",
+  "files": [
+    "admin{,/**}",
+    "lib{,/**}",
+    "*.js",
+    "io-package.json"
+  ],
+  "scripts": {
+    "test": "npm run test:js && npm run test:package",
+    "test:js": "mocha --config test/mocharc.custom.json \"{!(node_modules|test)/**/*.test.js,*.test.js,test/**/test!(PackageFiles|Startup).js}\"",
+    "test:package": "mocha test/package --exit",
+    "test:integration": "mocha test/integration --exit",
+    "lint": "eslint *.js lib/ admin/",
+    "translate": "translate-adapter",
+    "release": "release-script"
+  },
+  "bugs": {
+    "url": ""
+  },
+  "readmeFilename": "README.md"
+}
+

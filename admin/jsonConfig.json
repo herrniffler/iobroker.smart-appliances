@@ -1,0 +1,183 @@
+{
+  "type": "panel",
+  "items": {
+    "_general": {
+      "type": "panel",
+      "label": "General Settings",
+      "items": {
+        "tibberEnabled": {
+          "type": "checkbox",
+          "label": "Enable Tibber Integration",
+          "tooltip": "Enable automatic energy price optimization using Tibber data",
+          "default": true
+        },
+        "tibberHome": {
+          "type": "text",
+          "label": "Tibber Home ID",
+          "tooltip": "Your Tibber Home ID for price data access",
+          "placeholder": "2408b55e-487a-403e-b00e-5f1c571b99b1",
+          "hidden": "!data.tibberEnabled"
+        }
+      }
+    },
+    "_notifications": {
+      "type": "panel",
+      "label": "Notifications",
+      "items": {
+        "notifications": {
+          "type": "panel",
+          "items": {
+            "telegram": {
+              "type": "panel",
+              "label": "Telegram",
+              "items": {
+                "enabled": {
+                  "type": "checkbox",
+                  "label": "Enable Telegram notifications",
+                  "default": false
+                },
+                "instance": {
+                  "type": "selectSendTo",
+                  "label": "Telegram instance",
+                  "command": "listInstances",
+                  "jsonData": "{\"type\": \"telegram\"}",
+                  "hidden": "!data.notifications.telegram.enabled"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "_devices": {
+      "type": "panel",
+      "label": "Devices",
+      "items": {
+        "devices": {
+          "type": "table",
+          "label": "Configured Devices",
+          "items": [
+            {
+              "type": "text",
+              "attr": "id",
+              "label": "Device ID",
+              "tooltip": "Unique identifier for this device",
+              "placeholder": "dishwasher1"
+            },
+            {
+              "type": "text",
+              "attr": "name",
+              "label": "Device Name",
+              "tooltip": "Human-readable name for this device",
+              "placeholder": "Kitchen Dishwasher"
+            },
+            {
+              "type": "select",
+              "attr": "type",
+              "label": "Device Type",
+              "options": [
+                {"value": "dishwasher", "label": "Dishwasher"},
+                {"value": "washingmachine", "label": "Washing Machine"},
+                {"value": "dryer", "label": "Dryer"}
+              ]
+            },
+            {
+              "type": "checkbox",
+              "attr": "enabled",
+              "label": "Enabled",
+              "default": true
+            },
+            {
+              "type": "objectId",
+              "attr": "powerStateId",
+              "label": "Power State ID",
+              "tooltip": "State ID for power measurement (Watts)",
+              "filter": {"type": "state", "common": {"type": "number"}}
+            },
+            {
+              "type": "objectId",
+              "attr": "switchStateId",
+              "label": "Switch State ID",
+              "tooltip": "State ID for switching the device on/off",
+              "filter": {"type": "state", "common": {"type": "boolean"}}
+            },
+            {
+              "type": "number",
+              "attr": "powerThreshold",
+              "label": "Power Threshold (W)",
+              "tooltip": "Minimum power consumption to consider device as running",
+              "default": 0.5,
+              "min": 0,
+              "max": 100,
+              "step": 0.1
+            },
+            {
+              "type": "number",
+              "attr": "detectTimeSeconds",
+              "label": "Detection Time (seconds)",
+              "tooltip": "Time to wait before confirming device start",
+              "default": 10,
+              "min": 1,
+              "max": 300
+            },
+            {
+              "type": "number",
+              "attr": "requiredHours",
+              "label": "Required Runtime Hours",
+              "tooltip": "Number of consecutive cheap hours needed for optimal scheduling",
+              "default": 2,
+              "min": 1,
+              "max": 24
+            },
+            {
+              "type": "number",
+              "attr": "minRuntimeMinutes",
+              "label": "Min Runtime (minutes)",
+              "tooltip": "Minimum runtime before device can be considered finished",
+              "default": 110,
+              "min": 30,
+              "max": 600
+            },
+            {
+              "type": "number",
+              "attr": "zeroGraceMinutes",
+              "label": "Zero Power Grace (minutes)",
+              "tooltip": "Time to wait at zero power before considering device finished",
+              "default": 10,
+              "min": 1,
+              "max": 60
+            },
+            {
+              "type": "number",
+              "attr": "postConfirmMinutes",
+              "label": "Post Confirmation (minutes)",
+              "tooltip": "Additional confirmation time after zero power detection",
+              "default": 2,
+              "min": 1,
+              "max": 30
+            },
+            {
+              "type": "number",
+              "attr": "cooldownMinutes",
+              "label": "Cooldown (minutes)",
+              "tooltip": "Cooldown period after device finishes before new start detection",
+              "default": 10,
+              "min": 1,
+              "max": 120
+            },
+            {
+              "type": "number",
+              "attr": "dryReminderMinutes",
+              "label": "Dry Reminder (minutes)",
+              "tooltip": "Time after finish to send drying reminder (dishwasher only)",
+              "default": 45,
+              "min": 10,
+              "max": 480
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+

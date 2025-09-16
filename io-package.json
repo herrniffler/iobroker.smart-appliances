@@ -1,0 +1,93 @@
+{
+  "common": {
+    "name": "smart-appliances",
+    "version": "0.1.0",
+    "news": {
+      "0.1.0": {
+        "en": "Initial release",
+        "de": "Erste Version"
+      }
+    },
+    "title": "Smart Appliances Scheduler",
+    "titleLang": {
+      "en": "Smart Appliances Scheduler",
+      "de": "Intelligenter Großgeräte-Scheduler"
+    },
+    "desc": {
+      "en": "Intelligent appliance scheduler with Tibber energy price optimization",
+      "de": "Intelligenter Großgeräte-Scheduler mit Tibber-Energiepreis-Optimierung"
+    },
+    "authors": [
+      "herrniffler"
+    ],
+    "keywords": [
+      "smart home",
+      "appliances",
+      "tibber",
+      "energy",
+      "scheduler"
+    ],
+    "license": "MIT",
+    "platform": "Javascript/Node.js",
+    "main": "main.js",
+    "icon": "smart-appliances.png",
+    "enabled": true,
+    "extIcon": "https://raw.githubusercontent.com/herrniffler/ioBroker.smart-appliances/main/admin/smart-appliances.png",
+    "readme": "https://github.com/herrniffler/ioBroker.smart-appliances/blob/main/README.md",
+    "loglevel": "info",
+    "mode": "daemon",
+    "type": "energy",
+    "compact": true,
+    "connectionType": "local",
+    "dataSource": "poll",
+    "adminUI": {
+      "config": "json"
+    },
+    "dependencies": [
+      {
+        "js-controller": ">=3.3.22"
+      }
+    ],
+    "globalDependencies": [
+      {
+        "admin": ">=4.0.9"
+      }
+    ]
+  },
+  "native": {
+    "devices": [],
+    "tibberEnabled": true,
+    "tibberHome": "",
+    "notifications": {
+      "telegram": {
+        "enabled": false,
+        "instance": "telegram.0"
+      }
+    }
+  },
+  "objects": [],
+  "instanceObjects": [
+    {
+      "_id": "info",
+      "type": "channel",
+      "common": {
+        "name": "Information"
+      },
+      "native": {}
+    },
+    {
+      "_id": "info.connection",
+      "type": "state",
+      "common": {
+        "role": "indicator.connected",
+        "name": "Device or service connected",
+        "type": "boolean",
+        "read": true,
+        "write": false,
+        "def": false
+      },
+      "native": {}
+    }
+  ]
+}
+
