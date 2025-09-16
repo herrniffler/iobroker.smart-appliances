@@ -135,7 +135,7 @@
               "label": "Min Runtime (minutes)",
               "tooltip": "Minimum runtime before device can be considered finished",
               "default": 110,
-              "min": 30,
+              "min": 1,
               "max": 600
             },
             {
