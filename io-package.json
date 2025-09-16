@@ -60,7 +60,7 @@
     "tibberHome": "",
     "notifications": {
       "telegram": {
-        "enabled": false,
+        "enabled": true,
         "instance": "telegram.0"
       }
     }

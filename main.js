@@ -150,14 +150,22 @@ class SmartAppliances extends utils.Adapter {
     async sendNotification(message, priority = "normal") {
         this.log.info(`Notification: ${message}`);
 
+        // Debug: Log the entire config structure
+        this.log.debug(`Full config: ${JSON.stringify(this.config, null, 2)}`);
+        this.log.debug(`Notifications config: ${JSON.stringify(this.config.notifications, null, 2)}`);
+
         // Telegram notification
         if (this.config.notifications?.telegram?.enabled) {
             const instance = this.config.notifications.telegram.instance;
             try {
-                await this.sendToAsync(instance, message);
+                // Use sendTo for Telegram adapter
+                await this.sendToAsync(instance, "send", { text: message });
+                this.log.debug(`Telegram notification sent to ${instance} with message: ${message}`);
             } catch (error) {
                 this.log.warn(`Failed to send Telegram notification: ${error.message}`);
             }
+        } else {
+            this.log.debug("Telegram notifications are disabled in configuration");
         }
     }
 

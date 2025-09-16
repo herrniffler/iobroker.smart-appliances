@@ -24,26 +24,21 @@
       "type": "panel",
       "label": "Notifications",
       "items": {
-        "notifications": {
+        "telegram": {
           "type": "panel",
+          "label": "Telegram",
           "items": {
-            "telegram": {
-              "type": "panel",
-              "label": "Telegram",
-              "items": {
-                "enabled": {
-                  "type": "checkbox",
-                  "label": "Enable Telegram notifications",
-                  "default": false
-                },
-                "instance": {
-                  "type": "selectSendTo",
-                  "label": "Telegram instance",
-                  "command": "listInstances",
-                  "jsonData": "{\"type\": \"telegram\"}",
-                  "hidden": "!data.notifications.telegram.enabled"
-                }
-              }
+            "enabled": {
+              "type": "checkbox",
+              "label": "Enable Telegram notifications",
+              "default": true
+            },
+            "instance": {
+              "type": "selectSendTo",
+              "label": "Telegram instance",
+              "command": "listInstances",
+              "jsonData": "{\"type\": \"telegram\"}",
+              "hidden": "!data.notifications.telegram.enabled"
             }
           }
         }
@@ -76,9 +71,18 @@
               "attr": "type",
               "label": "Device Type",
               "options": [
-                {"value": "dishwasher", "label": "Dishwasher"},
-                {"value": "washingmachine", "label": "Washing Machine"},
-                {"value": "dryer", "label": "Dryer"}
+                {
+                  "value": "dishwasher",
+                  "label": "Dishwasher"
+                },
+                {
+                  "value": "washingmachine",
+                  "label": "Washing Machine"
+                },
+                {
+                  "value": "dryer",
+                  "label": "Dryer"
+                }
               ]
             },
             {
@@ -92,14 +96,24 @@
               "attr": "powerStateId",
               "label": "Power State ID",
               "tooltip": "State ID for power measurement (Watts)",
-              "filter": {"type": "state", "common": {"type": "number"}}
+              "filter": {
+                "type": "state",
+                "common": {
+                  "type": "number"
+                }
+              }
             },
             {
               "type": "objectId",
               "attr": "switchStateId",
               "label": "Switch State ID",
               "tooltip": "State ID for switching the device on/off",
-              "filter": {"type": "state", "common": {"type": "boolean"}}
+              "filter": {
+                "type": "state",
+                "common": {
+                  "type": "boolean"
+                }
+              }
             },
             {
               "type": "number",
@@ -180,4 +194,3 @@
     }
   }
 }
-
