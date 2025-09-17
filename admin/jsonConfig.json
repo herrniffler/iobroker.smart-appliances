@@ -41,6 +41,44 @@
               "hidden": "!data.notifications.telegram.enabled"
             }
           }
+        },
+        "todoist": {
+          "type": "panel",
+          "label": "ToDoist",
+          "items": {
+            "enabled": {
+              "type": "checkbox",
+              "label": "ToDoist aktivieren",
+              "default": false
+            },
+            "apiToken": {
+              "type": "text",
+              "label": "API Token",
+              "tooltip": "Persönlicher ToDoist API Token (Einstellungen → Integrationen)",
+              "hidden": "!data.notifications.todoist.enabled"
+            },
+            "projectId": {
+              "type": "text",
+              "label": "Projekt-ID",
+              "tooltip": "Ziel-Projekt-ID in ToDoist",
+              "hidden": "!data.notifications.todoist.enabled"
+            },
+            "dueString": {
+              "type": "text",
+              "label": "Fällig (due_string)",
+              "tooltip": "z. B. today, tomorrow, in 2 hours",
+              "default": "today",
+              "hidden": "!data.notifications.todoist.enabled"
+            },
+            "priority": {
+              "type": "number",
+              "label": "Priorität (1-4)",
+              "default": 2,
+              "min": 1,
+              "max": 4,
+              "hidden": "!data.notifications.todoist.enabled"
+            }
+          }
         }
       }
     },

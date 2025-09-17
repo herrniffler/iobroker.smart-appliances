@@ -62,6 +62,13 @@
       "telegram": {
         "enabled": true,
         "instance": "telegram.0"
+      },
+      "todoist": {
+        "enabled": false,
+        "apiToken": "",
+        "projectId": "",
+        "dueString": "today",
+        "priority": 2
       }
     }
   },
@@ -90,4 +97,3 @@
     }
   ]
 }
-

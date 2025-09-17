@@ -1,6 +1,7 @@
 "use strict";
 
 const utils = require("@iobroker/adapter-core");
+const https = require("https");
 const DishwasherDevice = require("./lib/DishwasherDevice");
 const WashingMachineDevice = require("./lib/WashingMachineDevice");
 const DryerDevice = require("./lib/DryerDevice");
@@ -166,6 +167,87 @@ class SmartAppliances extends utils.Adapter {
             }
         } else {
             this.log.debug("Telegram notifications are disabled in configuration");
+        }
+    }
+
+    /**
+     * Create a ToDoist task if configured
+     */
+    async createTodoistTask({ content, projectId, dueString, priority }) {
+        try {
+            const todoistCfg = this.config?.notifications?.todoist;
+            if (!todoistCfg || !todoistCfg.enabled) {
+                this.log.debug("ToDoist disabled – skipping task creation");
+                return null;
+            }
+
+            const apiToken = todoistCfg.apiToken?.trim();
+            const projId = (projectId || todoistCfg.projectId)?.toString().trim();
+            const due = (dueString || todoistCfg.dueString || "today").toString();
+            const prio = Number.isFinite(priority) ? priority : (todoistCfg.priority || 2);
+
+            if (!apiToken) {
+                this.log.warn("ToDoist API token missing – task not created");
+                return null;
+            }
+            if (!projId) {
+                this.log.warn("ToDoist project ID missing – task not created");
+                return null;
+            }
+            if (!content || !content.toString().trim()) {
+                this.log.debug("Empty ToDoist content – skipped");
+                return null;
+            }
+
+            const payload = JSON.stringify({
+                content: content.toString(),
+                project_id: projId,
+                due_string: due,
+                priority: prio
+            });
+
+            const options = {
+                hostname: "api.todoist.com",
+                path: "/rest/v2/tasks",
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${apiToken}`,
+                    "Content-Length": Buffer.byteLength(payload)
+                },
+                timeout: 10000
+            };
+
+            this.log.debug(`ToDoist Request: ${JSON.stringify({ projectId: projId, due: due, priority: prio, content }, null, 2)}`);
+
+            const result = await new Promise((resolve, reject) => {
+                const req = https.request(options, (res) => {
+                    let data = "";
+                    res.on("data", chunk => data += chunk);
+                    res.on("end", () => {
+                        if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
+                            try {
+                                const parsed = data ? JSON.parse(data) : {};
+                                resolve(parsed);
+                            } catch (e) {
+                                resolve({ statusCode: res.statusCode, raw: data });
+                            }
+                        } else {
+                            reject(new Error(`ToDoist HTTP ${res.statusCode}: ${data}`));
+                        }
+                    });
+                });
+                req.on("error", reject);
+                req.on("timeout", () => req.destroy(new Error("ToDoist request timeout")));
+                req.write(payload);
+                req.end();
+            });
+
+            this.log.info(`ToDoist task created: ${result?.id || "ok"}`);
+            return result;
+        } catch (err) {
+            this.log.warn(`ToDoist task creation failed: ${err.message}`);
+            return null;
         }
     }
 
