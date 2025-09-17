@@ -170,7 +170,7 @@ class SmartAppliances extends utils.Adapter {
     /**
      * Create a ToDoist task using todoist2.0 adapter
      */
-    async createTodoistTask({ content, projectId, sectionId, priority }) {
+    async createTodoistTask({ content, projectId, sectionId, priority, parentId, order }) {
         try {
             if (!this.config.todoistEnabled) {
                 this.log.debug("ToDoist disabled – skipping task creation");
@@ -181,9 +181,6 @@ class SmartAppliances extends utils.Adapter {
             const projId = projectId || this.config.todoistProjectId;
             const sectId = sectionId || this.config.todoistSectionId;
             const prio = Number.isFinite(priority) ? Number(priority) : Number(this.config.todoistPriority || 2);
-
-            // Convert date to date format (YYYY-MM-DD) if needed
-            let dateStr = new Date().toISOString().split('T')[0];
 
             if (!projId) {
                 this.log.warn("ToDoist project ID missing – task not created");
@@ -199,20 +196,20 @@ class SmartAppliances extends utils.Adapter {
                 task: content.toString(),
                 project_id: Number(projId),
                 priority: prio,
-                date: dateStr
+                date: "today",
             };
-
-            // Add section_id if provided
-            if (sectId) {
-                taskData.section_id = Number(sectId);
+            if (sectId) taskData.section_id = Number(sectId);
+            if (parentId) {
+                taskData.parent_id = Number(parentId);
+                delete taskData.date;
             }
+            if (order) taskData.order = order;
 
             const todoistInstance = (this.config.todoistInstance || "todoist2.0").toString();
             this.log.debug(`ToDoist Request to ${todoistInstance}: ${JSON.stringify(taskData, null, 2)}`);
 
-            // Send to configured todoist instance
             const result = await this.sendToAsync(todoistInstance, "send", taskData);
-
+            this.log.debug(`ToDoist response: ${JSON.stringify(result)}`);
             this.log.info(`ToDoist task created via adapter ${todoistInstance}: ${result?.id || "ok"}`);
             return result;
         } catch (err) {
