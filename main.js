@@ -120,14 +120,18 @@ class SmartAppliances extends utils.Adapter {
      */
     onStateChange(id, state) {
         if (state) {
-            this.log.debug(`State ${id} changed: ${state.val} (ack = ${state.ack})`);
-
-            // Forward to appropriate device
-            for (const [deviceId, device] of this.devices) {
-                if (device.handlesState(id)) {
-                    device.onStateChange(id, state);
-                    break;
+            this.log.debug(`State ${id} change triggered: ${state.val} (ack = ${state.ack})`);
+            if (state.ts === state.lc) {
+                this.log.debug(`State ${id} changed by adapter - processing`);
+                // Forward to appropriate device
+                for (const [deviceId, device] of this.devices) {
+                    if (device.handlesState(id)) {
+                        device.onStateChange(id, state);
+                        break;
+                    }
                 }
+            } else {
+                this.log.debug(`State ${id} was not changed by adapter - ignoring`);
             }
         } else {
             this.log.debug(`State ${id} deleted`);
@@ -151,11 +155,7 @@ class SmartAppliances extends utils.Adapter {
     async sendNotification(message, priority = "normal") {
         this.log.info(`Notification: ${message}`);
 
-        // Debug: Log the entire config structure
-        this.log.debug(`Full config: ${JSON.stringify(this.config, null, 2)}`);
-        this.log.debug(`Notifications config: ${JSON.stringify(this.config.notifications, null, 2)}`);
-
-        // Telegram notification
+        // Telegram notifications
         if (this.config.telegramEnabled && this.config.telegramInstance) {
             try {
                 await this.sendToAsync(this.config.telegramInstance, "send", { text: message });
