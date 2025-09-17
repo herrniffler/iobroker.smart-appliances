@@ -1,7 +1,6 @@
 "use strict";
 
 const utils = require("@iobroker/adapter-core");
-const https = require("https");
 const DishwasherDevice = require("./lib/DishwasherDevice");
 const WashingMachineDevice = require("./lib/WashingMachineDevice");
 const DryerDevice = require("./lib/DryerDevice");
@@ -152,7 +151,7 @@ class SmartAppliances extends utils.Adapter {
     /**
      * Send notification via configured services
      */
-    async sendNotification(message, priority = "normal") {
+    async sendNotification(message) {
         this.log.info(`Notification: ${message}`);
 
         // Telegram notifications
@@ -169,24 +168,23 @@ class SmartAppliances extends utils.Adapter {
     }
 
     /**
-     * Create a ToDoist task if configured
+     * Create a ToDoist task using todoist2.0 adapter
      */
-    async createTodoistTask({ content, projectId, dueString, priority }) {
+    async createTodoistTask({ content, projectId, sectionId, priority }) {
         try {
             if (!this.config.todoistEnabled) {
                 this.log.debug("ToDoist disabled – skipping task creation");
                 return null;
             }
 
-            const apiToken = (this.config.todoistToken || "").trim();
-            const projId = (projectId || this.config.todoistProjectId || "").toString().trim();
-            const due = (dueString || this.config.todoistDueString || "today").toString();
+            // Use configured values or provided parameters
+            const projId = projectId || this.config.todoistProjectId;
+            const sectId = sectionId || this.config.todoistSectionId;
             const prio = Number.isFinite(priority) ? Number(priority) : Number(this.config.todoistPriority || 2);
 
-            if (!apiToken) {
-                this.log.warn("ToDoist API token missing – task not created");
-                return null;
-            }
+            // Convert date to date format (YYYY-MM-DD) if needed
+            let dateStr = new Date().toISOString().split('T')[0];
+
             if (!projId) {
                 this.log.warn("ToDoist project ID missing – task not created");
                 return null;
@@ -196,51 +194,26 @@ class SmartAppliances extends utils.Adapter {
                 return null;
             }
 
-            const payload = JSON.stringify({
-                content: content.toString(),
-                project_id: projId,
-                due_string: due,
-                priority: prio
-            });
-
-            const options = {
-                hostname: "api.todoist.com",
-                path: "/rest/v2/tasks",
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${apiToken}`,
-                    "Content-Length": Buffer.byteLength(payload)
-                },
-                timeout: 10000
+            const taskData = {
+                funktion: "add_task",
+                task: content.toString(),
+                project_id: Number(projId),
+                priority: prio,
+                date: dateStr
             };
 
-            this.log.debug(`ToDoist Request: ${JSON.stringify({ projectId: projId, due: due, priority: prio, content }, null, 2)}`);
+            // Add section_id if provided
+            if (sectId) {
+                taskData.section_id = Number(sectId);
+            }
 
-            const result = await new Promise((resolve, reject) => {
-                const req = https.request(options, (res) => {
-                    let data = "";
-                    res.on("data", chunk => data += chunk);
-                    res.on("end", () => {
-                        if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
-                            try {
-                                const parsed = data ? JSON.parse(data) : {};
-                                resolve(parsed);
-                            } catch (e) {
-                                resolve({ statusCode: res.statusCode, raw: data });
-                            }
-                        } else {
-                            reject(new Error(`ToDoist HTTP ${res.statusCode}: ${data}`));
-                        }
-                    });
-                });
-                req.on("error", reject);
-                req.on("timeout", () => req.destroy(new Error("ToDoist request timeout")));
-                req.write(payload);
-                req.end();
-            });
+            const todoistInstance = (this.config.todoistInstance || "todoist2.0").toString();
+            this.log.debug(`ToDoist Request to ${todoistInstance}: ${JSON.stringify(taskData, null, 2)}`);
 
-            this.log.info(`ToDoist task created: ${result?.id || "ok"}`);
+            // Send to configured todoist instance
+            const result = await this.sendToAsync(todoistInstance, "send", taskData);
+
+            this.log.info(`ToDoist task created via adapter ${todoistInstance}: ${result?.id || "ok"}`);
             return result;
         } catch (err) {
             this.log.warn(`ToDoist task creation failed: ${err.message}`);

@@ -61,8 +61,8 @@
     "telegramEnabled": true,
     "telegramInstance": "telegram.0",
     "todoistEnabled": false,
-    "todoistToken": "",
     "todoistProjectId": "",
+    "todoistSectionId": "",
     "todoistDueString": "today",
     "todoistPriority": 2
   },

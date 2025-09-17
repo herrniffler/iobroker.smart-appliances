@@ -59,12 +59,12 @@
       },
       "text": "ToDoist Setup"
     },
-    "todoistToken": {
+    "todoistInstance": {
       "hidden": "!data.todoistEnabled",
-      "type": "text",
+      "type": "instance",
       "newLine": true,
-      "label": "ToDoist API Token",
-      "tooltip": "Personal API token from ToDoist settings"
+      "adapter": "todoist2",
+      "label": "Select ToDoist Instance"
     },
     "todoistProjectId": {
       "hidden": "!data.todoistEnabled",
@@ -72,12 +72,11 @@
       "label": "ToDoist Project ID",
       "tooltip": "Target project ID in ToDoist"
     },
-    "todoistDueString": {
+    "todoistSectionId": {
       "hidden": "!data.todoistEnabled",
       "type": "text",
-      "label": "Due (due_string)",
-      "tooltip": "e.g., today, tomorrow, in 2 hours",
-      "default": "today"
+      "label": "ToDoist Section ID (optional)",
+      "tooltip": "Optional section ID within the project"
     },
     "todoistPriority": {
       "hidden": "!data.todoistEnabled",
