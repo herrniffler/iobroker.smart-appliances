@@ -58,19 +58,13 @@
     "devices": [],
     "tibberEnabled": true,
     "tibberHome": "",
-    "notifications": {
-      "telegram": {
-        "enabled": true,
-        "instance": "telegram.0"
-      },
-      "todoist": {
-        "enabled": false,
-        "apiToken": "",
-        "projectId": "",
-        "dueString": "today",
-        "priority": 2
-      }
-    }
+    "telegramEnabled": true,
+    "telegramInstance": "telegram.0",
+    "todoistEnabled": false,
+    "todoistToken": "",
+    "todoistProjectId": "",
+    "todoistDueString": "today",
+    "todoistPriority": 2
   },
   "objects": [],
   "instanceObjects": [

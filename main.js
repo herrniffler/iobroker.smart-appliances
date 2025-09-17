@@ -156,17 +156,15 @@ class SmartAppliances extends utils.Adapter {
         this.log.debug(`Notifications config: ${JSON.stringify(this.config.notifications, null, 2)}`);
 
         // Telegram notification
-        if (this.config.notifications?.telegram?.enabled) {
-            const instance = this.config.notifications.telegram.instance;
+        if (this.config.telegramEnabled && this.config.telegramInstance) {
             try {
-                // Use sendTo for Telegram adapter
-                await this.sendToAsync(instance, "send", { text: message });
-                this.log.debug(`Telegram notification sent to ${instance} with message: ${message}`);
+                await this.sendToAsync(this.config.telegramInstance, "send", { text: message });
+                this.log.debug(`Telegram notification sent to ${this.config.telegramInstance} with message: ${message}`);
             } catch (error) {
                 this.log.warn(`Failed to send Telegram notification: ${error.message}`);
             }
         } else {
-            this.log.debug("Telegram notifications are disabled in configuration");
+            this.log.debug("Telegram notifications are disabled or not fully configured");
         }
     }
 
@@ -175,16 +173,15 @@ class SmartAppliances extends utils.Adapter {
      */
     async createTodoistTask({ content, projectId, dueString, priority }) {
         try {
-            const todoistCfg = this.config?.notifications?.todoist;
-            if (!todoistCfg || !todoistCfg.enabled) {
+            if (!this.config.todoistEnabled) {
                 this.log.debug("ToDoist disabled – skipping task creation");
                 return null;
             }
 
-            const apiToken = todoistCfg.apiToken?.trim();
-            const projId = (projectId || todoistCfg.projectId)?.toString().trim();
-            const due = (dueString || todoistCfg.dueString || "today").toString();
-            const prio = Number.isFinite(priority) ? priority : (todoistCfg.priority || 2);
+            const apiToken = (this.config.todoistToken || "").trim();
+            const projId = (projectId || this.config.todoistProjectId || "").toString().trim();
+            const due = (dueString || this.config.todoistDueString || "today").toString();
+            const prio = Number.isFinite(priority) ? Number(priority) : Number(this.config.todoistPriority || 2);
 
             if (!apiToken) {
                 this.log.warn("ToDoist API token missing – task not created");

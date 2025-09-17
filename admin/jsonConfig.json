@@ -1,86 +1,91 @@
 {
   "type": "panel",
   "items": {
-    "_general": {
-      "type": "panel",
-      "label": "General Settings",
-      "items": {
-        "tibberEnabled": {
-          "type": "checkbox",
-          "label": "Enable Tibber Integration",
-          "tooltip": "Enable automatic energy price optimization using Tibber data",
-          "default": true
-        },
-        "tibberHome": {
-          "type": "text",
-          "label": "Tibber Home ID",
-          "tooltip": "Your Tibber Home ID for price data access",
-          "placeholder": "2408b55e-487a-403e-b00e-5f1c571b99b1",
-          "hidden": "!data.tibberEnabled"
-        }
-      }
+    "tibberEnabled": {
+      "type": "checkbox",
+      "label": "Enable Tibber Integration",
+      "tooltip": "Enable automatic energy price optimization using Tibber data",
+      "default": true
     },
-    "_notifications": {
-      "type": "panel",
-      "label": "Notifications",
-      "items": {
-        "telegram": {
-          "type": "panel",
-          "label": "Telegram",
-          "items": {
-            "enabled": {
-              "type": "checkbox",
-              "label": "Enable Telegram notifications",
-              "default": true
-            },
-            "instance": {
-              "type": "selectSendTo",
-              "label": "Telegram instance",
-              "command": "listInstances",
-              "jsonData": "{\"type\": \"telegram\"}",
-              "hidden": "!data.notifications.telegram.enabled"
-            }
-          }
-        },
-        "todoist": {
-          "type": "panel",
-          "label": "ToDoist",
-          "items": {
-            "enabled": {
-              "type": "checkbox",
-              "label": "ToDoist aktivieren",
-              "default": false
-            },
-            "apiToken": {
-              "type": "text",
-              "label": "API Token",
-              "tooltip": "Persönlicher ToDoist API Token (Einstellungen → Integrationen)",
-              "hidden": "!data.notifications.todoist.enabled"
-            },
-            "projectId": {
-              "type": "text",
-              "label": "Projekt-ID",
-              "tooltip": "Ziel-Projekt-ID in ToDoist",
-              "hidden": "!data.notifications.todoist.enabled"
-            },
-            "dueString": {
-              "type": "text",
-              "label": "Fällig (due_string)",
-              "tooltip": "z. B. today, tomorrow, in 2 hours",
-              "default": "today",
-              "hidden": "!data.notifications.todoist.enabled"
-            },
-            "priority": {
-              "type": "number",
-              "label": "Priorität (1-4)",
-              "default": 2,
-              "min": 1,
-              "max": 4,
-              "hidden": "!data.notifications.todoist.enabled"
-            }
-          }
-        }
-      }
+    "telegramEnabled": {
+      "type": "checkbox",
+      "label": "Enable Telegram notifications",
+      "tooltip": "Enable notifications via Telegram",
+      "default": true
+    },
+    "todoistEnabled": {
+      "type": "checkbox",
+      "label": "Enable ToDoist task creation",
+      "tooltip": "Enable task creation in ToDoist for finished appliances",
+      "default": false
+    },
+    "_tibberInfo": {
+      "type": "header",
+      "size": 4,
+      "style": {
+        "marginTop": 20
+      },
+      "text": "Tibber Setup Instructions"
+    },
+    "tibberHome": {
+      "hidden": "!data.tibberEnabled",
+      "type": "text",
+      "newLine": true,
+      "label": "Tibber Home ID",
+      "tooltip": "Your Tibber Home ID for price data access"
+    },
+    "_telegramInfo": {
+      "hidden": "!data.telegramEnabled",
+      "type": "header",
+      "size": 4,
+      "style": {
+        "marginTop": 20
+      },
+      "text": "Telegram Setup Instructions"
+    },
+    "telegramInstance": {
+      "hidden": "!data.telegramEnabled",
+      "type": "instance",
+      "newLine": true,
+      "adapter": "telegram",
+      "label": "Select Telegram Instance"
+    },
+    "_todoistInfo": {
+      "hidden": "!data.todoistEnabled",
+      "type": "header",
+      "size": 4,
+      "style": {
+        "marginTop": 20
+      },
+      "text": "ToDoist Setup"
+    },
+    "todoistToken": {
+      "hidden": "!data.todoistEnabled",
+      "type": "text",
+      "newLine": true,
+      "label": "ToDoist API Token",
+      "tooltip": "Personal API token from ToDoist settings"
+    },
+    "todoistProjectId": {
+      "hidden": "!data.todoistEnabled",
+      "type": "text",
+      "label": "ToDoist Project ID",
+      "tooltip": "Target project ID in ToDoist"
+    },
+    "todoistDueString": {
+      "hidden": "!data.todoistEnabled",
+      "type": "text",
+      "label": "Due (due_string)",
+      "tooltip": "e.g., today, tomorrow, in 2 hours",
+      "default": "today"
+    },
+    "todoistPriority": {
+      "hidden": "!data.todoistEnabled",
+      "type": "number",
+      "label": "Priority (1-4)",
+      "default": 2,
+      "min": 1,
+      "max": 4
     },
     "_devices": {
       "type": "panel",
