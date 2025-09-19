@@ -168,54 +168,78 @@ class SmartAppliances extends utils.Adapter {
     }
 
     /**
+     * Send a request to the ToDoist adapter
+     */
+    async sendTodoistRequest(taskData, logPrefix = "ToDoist") {
+        if (!this.config.todoistEnabled) {
+            this.log.debug(`${logPrefix} disabled – skipping request`);
+            return null;
+        }
+        const todoistInstance = (this.config.todoistInstance || "todoist2.0").toString();
+        this.log.debug(`${logPrefix} request to ${todoistInstance}: ${JSON.stringify(taskData)}`);
+        try {
+            const result = await this.sendToAsync(todoistInstance, "send", taskData);
+            this.log.debug(`${logPrefix} response: ${JSON.stringify(result)}`);
+            return result;
+        } catch (err) {
+            this.log.warn(`${logPrefix} request failed: ${err.message}`);
+            return null;
+        }
+    }
+
+    /**
      * Create a ToDoist task using todoist2.0 adapter
      */
     async createTodoistTask({ content, projectId, sectionId, priority, parentId, order }) {
-        try {
-            if (!this.config.todoistEnabled) {
-                this.log.debug("ToDoist disabled – skipping task creation");
-                return null;
-            }
+        const projId = projectId || this.config.todoistProjectId;
+        const sectId = sectionId || this.config.todoistSectionId;
+        const prio = Number.isFinite(priority) ? Number(priority) : Number(this.config.todoistPriority || 2);
 
-            // Use configured values or provided parameters
-            const projId = projectId || this.config.todoistProjectId;
-            const sectId = sectionId || this.config.todoistSectionId;
-            const prio = Number.isFinite(priority) ? Number(priority) : Number(this.config.todoistPriority || 2);
-
-            if (!projId) {
-                this.log.warn("ToDoist project ID missing – task not created");
-                return null;
-            }
-            if (!content || !content.toString().trim()) {
-                this.log.debug("Empty ToDoist content – skipped");
-                return null;
-            }
-
-            const taskData = {
-                funktion: "add_task",
-                task: content.toString(),
-                project_id: Number(projId),
-                priority: prio,
-                date: "today",
-            };
-            if (sectId) taskData.section_id = Number(sectId);
-            if (parentId) {
-                taskData.parent_id = Number(parentId);
-                delete taskData.date;
-            }
-            if (order) taskData.order = order;
-
-            const todoistInstance = (this.config.todoistInstance || "todoist2.0").toString();
-            this.log.debug(`ToDoist Request to ${todoistInstance}: ${JSON.stringify(taskData, null, 2)}`);
-
-            const result = await this.sendToAsync(todoistInstance, "send", taskData);
-            this.log.debug(`ToDoist response: ${JSON.stringify(result)}`);
-            this.log.info(`ToDoist task created via adapter ${todoistInstance}: ${result?.id || "ok"}`);
-            return result;
-        } catch (err) {
-            this.log.warn(`ToDoist task creation failed: ${err.message}`);
+        if (!projId) {
+            this.log.warn("ToDoist project ID missing – task not created");
             return null;
         }
+        if (!content || !content.toString().trim()) {
+            this.log.debug("Empty ToDoist content – skipped");
+            return null;
+        }
+
+        const taskData = {
+            funktion: "add_task",
+            task: content.toString(),
+            project_id: Number(projId),
+            priority: prio,
+            date: "today",
+        };
+        if (sectId) taskData.section_id = Number(sectId);
+        if (parentId) {
+            taskData.parent_id = Number(parentId);
+            delete taskData.date;
+        }
+        if (order) taskData.order = order;
+
+        const result = await this.sendTodoistRequest(taskData, "ToDoist create");
+        this.log.info(`ToDoist task created via adapter: ${result?.id || "ok"}`);
+        return result;
+    }
+
+    /**
+     * Close a ToDoist task using todoist2.0 adapter
+     */
+    async closeTodoistTask(taskId) {
+        if (!taskId) {
+            this.log.warn("No ToDoist task ID provided – cannot close task");
+            return null;
+        }
+
+        const taskData = {
+            funktion: "close_task",
+            task_id: Number(taskId)
+        };
+
+        const result = await this.sendTodoistRequest(taskData, "ToDoist close");
+        this.log.info(`ToDoist task closed via adapter: ${taskId}`);
+        return result;
     }
 
     /**
