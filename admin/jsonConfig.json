@@ -233,6 +233,44 @@
           ]
         }
       }
+    },
+    "washingPrograms": {
+      "type": "table",
+      "label": "Washing Programs",
+      "tooltip": "Configure available washing programs, their duration (minutes), and default dryer usage.",
+      "items": [
+        {
+          "type": "text",
+          "attr": "program",
+          "label": "Program",
+          "tooltip": "Program name or temperature (e.g. 60, 40, 30)"
+        },
+        {
+          "type": "number",
+          "attr": "duration",
+          "label": "Duration (min)",
+          "tooltip": "Duration of the washing program in minutes",
+          "min": 1,
+          "max": 600,
+          "default": 120
+        },
+        {
+          "type": "checkbox",
+          "attr": "withDryer",
+          "label": "Default: Dryer after washing",
+          "tooltip": "Should the dryer run after this program by default?",
+          "default": false
+        }
+      ],
+      "default": [{ "program": "30", "duration": 120, "withDryer": false }]
+    },
+    "dryerDuration": {
+      "type": "number",
+      "label": "Dryer Duration (min)",
+      "tooltip": "Default duration for the dryer after washing (minutes)",
+      "default": 180,
+      "min": 1,
+      "max": 600
     }
   }
 }

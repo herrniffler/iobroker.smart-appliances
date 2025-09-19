@@ -52,7 +52,8 @@
       {
         "admin": ">=4.0.9"
       }
-    ]
+    ],
+    "messagebox": true
   },
   "native": {
     "devices": [],
@@ -64,7 +65,17 @@
     "todoistProjectId": "",
     "todoistSectionId": "",
     "todoistDueString": "today",
-    "todoistPriority": 2
+    "todoistPriority": 2,
+    "washingPrograms": {
+      "type": "array",
+      "default": [{ "program": "30", "duration": 120, "withDryer": false }],
+      "description": "List of available washing programs with duration (minutes) and default dryer usage."
+    },
+    "dryerDuration": {
+      "type": "number",
+      "default": 180,
+      "description": "Default dryer duration in minutes."
+    }
   },
   "objects": [],
   "instanceObjects": [

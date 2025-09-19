@@ -42,6 +42,14 @@ class SmartAppliances extends utils.Adapter {
         // Set connection status
         this.setState("info.connection", true, true);
         this.log.info("Smart Appliances Adapter started successfully");
+
+        this.on("message", async obj => {
+            this.log.debug(`Received message: ${JSON.stringify(obj)}`);
+            if (obj && obj.command === "setWashingProgram") {
+                await this.handleSetWashingProgram(obj.message || {});
+                if (obj.callback) this.sendTo(obj.from, obj.command, { success: true }, obj.callback);
+            }
+        });
     }
 
     /**
@@ -370,6 +378,45 @@ class SmartAppliances extends utils.Adapter {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Handle setWashingProgram via sendTo
+     */
+    async handleSetWashingProgram(params) {
+        const { program, withDryer } = params;
+        // Validate config
+        if (!Array.isArray(this.config.washingPrograms) || this.config.washingPrograms.length === 0) {
+            this.log.warn("No washing programs configured. Please check adapter settings.");
+            return;
+        }
+        if (!program) {
+            this.log.warn("No washing program provided");
+            return;
+        }
+        // Find program config
+        const progConfig = this.config.washingPrograms.find(p => p.program === program);
+        if (!progConfig) {
+            this.log.warn(`Washing program '${program}' not found in config`);
+            return;
+        }
+        if (!progConfig.duration || typeof progConfig.duration !== "number" || progConfig.duration <= 0) {
+            this.log.warn(`Invalid duration for washing program '${program}' in config.`);
+            return;
+        }
+        // Use default withDryer if not provided
+        const dryerNeeded = typeof withDryer === "boolean" ? withDryer : !!progConfig.withDryer;
+        const dryerDuration = Number(this.config.dryerDuration) || 180;
+        if (dryerNeeded && (!dryerDuration || dryerDuration <= 0)) {
+            this.log.warn("Invalid dryer duration in config.");
+            return;
+        }
+        // Delegate to WashingMachineDevice for planning
+        for (const device of this.devices.values()) {
+            if (device instanceof WashingMachineDevice) {
+                await device.planWashingProgram({ program, duration: progConfig.duration, dryerNeeded, dryerDuration });
+            }
+        }
     }
 }
 
