@@ -75,7 +75,9 @@
       "type": "number",
       "default": 180,
       "description": "Default dryer duration in minutes."
-    }
+    },
+    "startTriggerStateId": "",
+    "startTriggerDelayMs": 5000
   },
   "objects": [],
   "instanceObjects": [
