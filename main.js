@@ -128,17 +128,12 @@ class SmartAppliances extends utils.Adapter {
     onStateChange(id, state) {
         if (state) {
             this.log.debug(`State ${id} change triggered: ${state.val} (ack = ${state.ack})`);
-            if (state.ts === state.lc) {
-                this.log.debug(`State ${id} changed by adapter - processing`);
-                // Forward to appropriate device
-                for (const [deviceId, device] of this.devices) {
-                    if (device.handlesState(id)) {
-                        device.onStateChange(id, state);
-                        break;
-                    }
+            // Immer weiterleiten an Devices (auch manuelle Änderungen), Devices unterscheiden über ack
+            for (const [deviceId, device] of this.devices) {
+                if (device.handlesState(id)) {
+                    device.onStateChange(id, state);
+                    break;
                 }
-            } else {
-                this.log.debug(`State ${id} was not changed by adapter - ignoring`);
             }
         } else {
             this.log.debug(`State ${id} deleted`);
