@@ -45,9 +45,24 @@ class SmartAppliances extends utils.Adapter {
 
         this.on("message", async obj => {
             this.log.debug(`Received message: ${JSON.stringify(obj)}`);
-            if (obj && obj.command === "setWashingProgram") {
-                await this.handleSetWashingProgram(obj.message || {});
-                if (obj.callback) this.sendTo(obj.from, obj.command, { success: true }, obj.callback);
+            if (!obj || !obj.command) return;
+            try {
+                switch (obj.command) {
+                    case "setWashingProgram":
+                        await this.handleSetWashingProgram(obj.message || {});
+                        if (obj.callback) this.sendTo(obj.from, obj.command, { success: true }, obj.callback);
+                        break;
+                    case "setStart":
+                        const result = await this.handleSetStart(obj.message || {});
+                        if (obj.callback) this.sendTo(obj.from, obj.command, result, obj.callback);
+                        break;
+                    default:
+                        this.log.warn(`Unknown message command: ${obj.command}`);
+                        if (obj.callback) this.sendTo(obj.from, obj.command, { success: false, error: "Unknown command" }, obj.callback);
+                }
+            } catch (e) {
+                this.log.warn(`Command ${obj.command} failed: ${e.message}`);
+                if (obj?.callback) this.sendTo(obj.from, obj.command, { success: false, error: e.message }, obj.callback);
             }
         });
     }
@@ -412,6 +427,88 @@ class SmartAppliances extends utils.Adapter {
                 await device.planWashingProgram({ program, duration: progConfig.duration, dryerNeeded, dryerDuration });
             }
         }
+    }
+
+    /**
+     * Handle setStart via sendTo
+     */
+    async handleSetStart(params) {
+        const { device, start, schedule = true } = params;
+        if (!device) {
+            return { success: false, error: "Parameter 'device' fehlt" };
+        }
+        if (!start) {
+            return { success: false, error: "Parameter 'start' fehlt" };
+        }
+
+        // Gerät anhand von Name (case-insensitive) oder ID finden
+        let target = null;
+        for (const dev of this.devices.values()) {
+            if (dev.id === device || dev.name === device || dev.name.toLowerCase() === String(device).toLowerCase()) {
+                target = dev; break;
+            }
+        }
+        if (!target) {
+            return { success: false, error: `Gerät '${device}' nicht gefunden` };
+        }
+        if (!target.genericScheduling) {
+            return { success: false, error: `Gerät '${device}' unterstützt kein Scheduling` };
+        }
+
+        // Datum parsen (deutsches Format dd.mm.yyyy HH:MM oder ISO fallback)
+        let date = null;
+        if (typeof start === "string") {
+            const trimmed = start.trim();
+            // Nur Zeit? (HH:MM)
+            const reTimeOnly = /^(\d{1,2}):(\d{2})$/;
+            const mt = trimmed.match(reTimeOnly);
+            if (mt) {
+                let h = parseInt(mt[1], 10);
+                let mi = parseInt(mt[2], 10);
+                if (h >= 0 && h < 24 && mi >= 0 && mi < 60) {
+                    const now = new Date();
+                    date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, mi, 0, 0);
+                    // Wenn Zeitpunkt heute schon vorbei ist -> morgen
+                    if (date.getTime() <= now.getTime()) {
+                        date = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, h, mi, 0, 0);
+                    }
+                }
+            }
+            if (!date) {
+                const re = /^(\d{1,2})\.(\d{1,2})\.(\d{4})\s+(\d{1,2}):(\d{2})$/;
+                const m = trimmed.match(re);
+                if (m) {
+                    const [ , dStr, moStr, yStr, hStr, minStr ] = m;
+                    const d = parseInt(dStr, 10);
+                    const mo = parseInt(moStr, 10) - 1;
+                    const y = parseInt(yStr, 10);
+                    const h = parseInt(hStr, 10);
+                    const mi = parseInt(minStr, 10);
+                    date = new Date(y, mo, d, h, mi, 0, 0);
+                } else {
+                    // ISO oder anderes Format versuchen
+                    const tmp = new Date(trimmed);
+                    if (!isNaN(tmp.getTime())) date = tmp;
+                }
+            }
+        } else if (start instanceof Date) {
+            date = start;
+        }
+
+        if (!date || isNaN(date.getTime())) {
+            return { success: false, error: `Ungültiges Datumsformat: '${start}' (erwartet dd.mm.yyyy HH:MM)` };
+        }
+
+        // Start durchführen
+        if (schedule) {
+            await target.scheduleStartAt(date);
+        } else {
+            await this.setStateAsync(`devices.${target.id}.startTime`, date.toISOString(), true);
+            await this.setStateAsync(`devices.${target.id}.scheduled`, false, true);
+        }
+
+        this.log.info(`Startzeit für Gerät '${target.name}' gesetzt: ${date.toLocaleString('de-DE')} (schedule=${schedule})`);
+        return { success: true, device: target.name, startTime: date.toISOString(), scheduled: schedule };
     }
 }
 
