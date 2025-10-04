@@ -183,7 +183,8 @@
               "tooltip": "Number of consecutive cheap hours needed for optimal scheduling",
               "default": 2,
               "min": 1,
-              "max": 24
+              "max": 24,
+              "hidden": "data.type !== 'washingmachine'"
             },
             {
               "type": "number",
