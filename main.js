@@ -36,6 +36,9 @@ class SmartAppliances extends utils.Adapter {
         // Load devices from configuration
         await this.loadDevices();
 
+        // Migrate existing old device states (devices.<id>.*) to new path devices.<type>s.<id>.*
+        await this.migrateOldDeviceObjects();
+
         // Start device monitoring
         await this.startDeviceMonitoring();
 
@@ -71,33 +74,78 @@ class SmartAppliances extends utils.Adapter {
      * Load devices from adapter configuration
      */
     async loadDevices() {
-        const devices = this.config.devices || [];
+        const collected = [];
 
-        for (const deviceConfig of devices) {
-            if (!deviceConfig.enabled) continue;
+        const scan = (obj, path = '') => {
+            if (!obj || typeof obj !== 'object') return;
+            for (const k of Object.keys(obj)) {
+                const v = obj[k];
+                const curPath = path ? `${path}.${k}` : k;
+                if (Array.isArray(v)) {
+                    // array might be a list of devices
+                    if (v.length > 0 && v.some(el => el && (el.id || el.name))) {
+                        for (const el of v) collected.push({ entry: el, sourceKey: curPath });
+                    }
+                } else if (v && typeof v === 'object') {
+                    scan(v, curPath);
+                }
+            }
+        };
 
-            this.log.info(`Loading device: ${deviceConfig.name} (${deviceConfig.type})`);
+        scan(this.config || {});
 
-            // Create device instance based on type
+        // Deduplicate by id
+        const unique = new Map();
+        for (const item of collected) {
+            const d = item.entry;
+            if (!d) continue;
+            // If it's a config description (from admin json), it may have 'attr' instead of real config
+            if (!d.id && d.attr) continue;
+            if (!d.id) continue;
+            if (!unique.has(d.id)) unique.set(d.id, { config: d, sourceKey: item.sourceKey });
+        }
+
+        for (const [id, info] of unique.entries()) {
+            const deviceConfig = Object.assign({}, info.config);
+            const sourceKey = info.sourceKey || '';
+
+            if (deviceConfig.enabled === false) {
+                this.log.debug(`Skipping disabled device: ${id}`);
+                continue;
+            }
+
+            // Infer type from sourceKey if missing
+            if (!deviceConfig.type) {
+                const sk = sourceKey.toLowerCase();
+                if (sk.includes('wash')) deviceConfig.type = 'washingmachine';
+                else if (sk.includes('dish')) deviceConfig.type = 'dishwasher';
+                else if (sk.includes('dryer')) deviceConfig.type = 'dryer';
+            }
+
+            // Map pressStateId -> startTriggerStateId
+            if (!deviceConfig.startTriggerStateId && deviceConfig.pressStateId) {
+                deviceConfig.startTriggerStateId = deviceConfig.pressStateId;
+            }
+
+            if (!deviceConfig.type) {
+                this.log.warn(`Device '${id}' has no inferred type (sourceKey='${sourceKey}') - skipping`);
+                continue;
+            }
+
+            this.log.info(`Loading device: ${deviceConfig.name || id} (${deviceConfig.type})`);
+
             let device;
             switch (deviceConfig.type) {
-                case "dishwasher":
-                    device = new DishwasherDevice(this, deviceConfig);
-                    break;
-                case "washingmachine":
-                    device = new WashingMachineDevice(this, deviceConfig);
-                    break;
-                case "dryer":
-                    device = new DryerDevice(this, deviceConfig);
-                    break;
+                case 'dishwasher': device = new DishwasherDevice(this, deviceConfig); break;
+                case 'washingmachine': device = new WashingMachineDevice(this, deviceConfig); break;
+                case 'dryer': device = new DryerDevice(this, deviceConfig); break;
                 default:
-                    this.log.warn(`Unknown device type: ${deviceConfig.type}`);
+                    this.log.warn(`Unknown device type: ${deviceConfig.type} for device ${id}`);
                     continue;
             }
 
-            // Initialize device
             await device.init();
-            this.devices.set(deviceConfig.id, device);
+            this.devices.set(id, device);
         }
 
         this.log.info(`Loaded ${this.devices.size} devices`);
@@ -440,12 +488,43 @@ class SmartAppliances extends utils.Adapter {
         if (schedule) {
             await target.scheduleStartAt(date);
         } else {
-            await this.setStateAsync(`devices.${target.id}.startTime`, date.toISOString(), true);
-            await this.setStateAsync(`devices.${target.id}.scheduled`, false, true);
+            await target.setStateAsync(`startTime`, date.toISOString(), true);
+            await target.setStateAsync(`scheduled`, false, true);
         }
 
         this.log.info(`Startzeit für Gerät '${target.name}' gesetzt: ${date.toLocaleString('de-DE')} (schedule=${schedule})`);
         return { success: true, device: target.name, startTime: date.toISOString(), scheduled: schedule };
+    }
+
+    // Migrate old device states to new devices.<type>s.<id> structure
+    async migrateOldDeviceObjects() {
+        this.log.info('Checking for legacy device objects to migrate...');
+        const keysToCopy = ["running","scheduled","startTime","runtime","task_id","subtask_gewaschen_id","transferBufferMinutes","avgPrice","startDetected"];
+        for (const [id, device] of this.devices) {
+            try {
+                // old prefix
+                const oldPrefix = `devices.${id}`;
+                // check if old channel exists
+                const oldObj = await this.getObjectAsync(`${oldPrefix}`);
+                if (!oldObj) continue;
+
+                // copy states if new state is empty or missing
+                for (const key of keysToCopy) {
+                    try {
+                        const oldState = await this.getStateAsync(`${oldPrefix}.${key}`);
+                        const newState = await device.getStateAsync ? await device.getStateAsync(key) : await this.getStateAsync(`${device.channelId()}.${key}`);
+                        if (oldState && oldState.val !== undefined && (newState === null || newState === undefined || newState.val === "")) {
+                            await device.setStateAsync(key, oldState.val, true);
+                            this.log.info(`Migrated ${oldPrefix}.${key} -> ${device.channelId()}.${key}`);
+                        }
+                    } catch (e) {
+                        this.log.debug(`Migration: failed copying ${oldPrefix}.${key}: ${e.message}`);
+                    }
+                }
+            } catch (e) {
+                this.log.debug(`Migration: error for device ${id}: ${e.message}`);
+            }
+        }
     }
 }
 

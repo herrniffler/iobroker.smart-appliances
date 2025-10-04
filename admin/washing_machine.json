@@ -4,7 +4,7 @@
       "type": "panel",
       "label": "Washing machines",
       "items": {
-        "devices": {
+        "washingMachines": {
           "type": "table",
           "label": "Configured Washing machines",
           "items": [
@@ -14,6 +14,13 @@
               "label": "Device ID",
               "tooltip": "Unique identifier for this device",
               "placeholder": "washing_machine_1"
+            },
+            {
+              "type": "text",
+              "attr": "type",
+              "label": "Type",
+              "default": "washingmachine",
+              "hidden": true
             },
             {
               "type": "text",

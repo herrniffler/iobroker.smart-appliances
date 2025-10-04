@@ -2,9 +2,9 @@
   "items": {
     "_dishwasher": {
       "type": "panel",
-      "label": "Dishwasher",
+      "label": "Dishwashers",
       "items": {
-        "devices": {
+        "dishwashers": {
           "type": "table",
           "label": "Configured Dishwashers",
           "items": [
@@ -14,6 +14,13 @@
               "label": "Device ID",
               "tooltip": "Unique identifier for this device",
               "placeholder": "dishwasher1"
+            },
+            {
+              "type": "text",
+              "attr": "type",
+              "label": "Type",
+              "default": "dishwasher",
+              "hidden": true
             },
             {
               "type": "text",
