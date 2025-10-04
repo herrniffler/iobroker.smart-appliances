@@ -1,277 +1,30 @@
 {
-  "type": "panel",
+  "type": "tabs",
   "items": {
-    "tibberEnabled": {
-      "type": "checkbox",
-      "label": "Enable Tibber Integration",
-      "tooltip": "Enable automatic energy price optimization using Tibber data",
-      "default": true
-    },
-    "telegramEnabled": {
-      "type": "checkbox",
-      "label": "Enable Telegram notifications",
-      "tooltip": "Enable notifications via Telegram",
-      "default": true
-    },
-    "todoistEnabled": {
-      "type": "checkbox",
-      "label": "Enable ToDoist task creation",
-      "tooltip": "Enable task creation in ToDoist for finished appliances",
-      "default": false
-    },
-    "_tibberInfo": {
-      "type": "header",
-      "size": 4,
-      "style": {
-        "marginTop": 20
-      },
-      "text": "Tibber Setup Instructions"
-    },
-    "tibberHome": {
-      "hidden": "!data.tibberEnabled",
-      "type": "text",
-      "newLine": true,
-      "label": "Tibber Home ID",
-      "tooltip": "Your Tibber Home ID for price data access"
-    },
-    "_telegramInfo": {
-      "hidden": "!data.telegramEnabled",
-      "type": "header",
-      "size": 4,
-      "style": {
-        "marginTop": 20
-      },
-      "text": "Telegram Setup Instructions"
-    },
-    "telegramInstance": {
-      "hidden": "!data.telegramEnabled",
-      "type": "instance",
-      "newLine": true,
-      "adapter": "telegram",
-      "label": "Select Telegram Instance"
-    },
-    "_todoistInfo": {
-      "hidden": "!data.todoistEnabled",
-      "type": "header",
-      "size": 4,
-      "style": {
-        "marginTop": 20
-      },
-      "text": "ToDoist Setup"
-    },
-    "todoistInstance": {
-      "hidden": "!data.todoistEnabled",
-      "type": "instance",
-      "newLine": true,
-      "adapter": "todoist2",
-      "label": "Select ToDoist Instance"
-    },
-    "todoistProjectId": {
-      "hidden": "!data.todoistEnabled",
-      "type": "text",
-      "label": "ToDoist Project ID",
-      "tooltip": "Target project ID in ToDoist"
-    },
-    "todoistSectionId": {
-      "hidden": "!data.todoistEnabled",
-      "type": "text",
-      "label": "ToDoist Section ID (optional)",
-      "tooltip": "Optional section ID within the project"
-    },
-    "todoistPriority": {
-      "hidden": "!data.todoistEnabled",
-      "type": "number",
-      "label": "Priority (1-4)",
-      "default": 2,
-      "min": 1,
-      "max": 4
-    },
-    "_devices": {
+    "tibber": {
       "type": "panel",
-      "label": "Devices",
-      "items": {
-        "devices": {
-          "type": "table",
-          "label": "Configured Devices",
-          "items": [
-            {
-              "type": "text",
-              "attr": "id",
-              "label": "Device ID",
-              "tooltip": "Unique identifier for this device",
-              "placeholder": "dishwasher1"
-            },
-            {
-              "type": "text",
-              "attr": "name",
-              "label": "Device Name",
-              "tooltip": "Human-readable name for this device",
-              "placeholder": "Kitchen Dishwasher"
-            },
-            {
-              "type": "select",
-              "attr": "type",
-              "label": "Device Type",
-              "options": [
-                {
-                  "value": "dishwasher",
-                  "label": "Dishwasher"
-                },
-                {
-                  "value": "washingmachine",
-                  "label": "Washing Machine"
-                },
-                {
-                  "value": "dryer",
-                  "label": "Dryer"
-                }
-              ]
-            },
-            {
-              "type": "checkbox",
-              "attr": "enabled",
-              "label": "Enabled",
-              "default": true
-            },
-            {
-              "type": "objectId",
-              "attr": "powerStateId",
-              "label": "Power State ID",
-              "tooltip": "State ID for power measurement (Watts)",
-              "filter": {
-                "type": "state",
-                "common": {
-                  "type": "number"
-                }
-              }
-            },
-            {
-              "type": "objectId",
-              "attr": "switchStateId",
-              "label": "Switch State ID",
-              "tooltip": "State ID for switching the device on/off",
-              "filter": {
-                "type": "state",
-                "common": {
-                  "type": "boolean"
-                }
-              }
-            },
-            {
-              "type": "number",
-              "attr": "powerThreshold",
-              "label": "Power Threshold (W)",
-              "tooltip": "Minimum power consumption to consider device as running",
-              "default": 0.5,
-              "min": 0,
-              "max": 100,
-              "step": 0.1
-            },
-            {
-              "type": "number",
-              "attr": "detectTimeSeconds",
-              "label": "Detection Time (seconds)",
-              "tooltip": "Time to wait before confirming device start",
-              "default": 10,
-              "min": 1,
-              "max": 300
-            },
-            {
-              "type": "number",
-              "attr": "requiredHours",
-              "label": "Required Runtime Hours",
-              "tooltip": "Number of consecutive cheap hours needed for optimal scheduling",
-              "default": 2,
-              "min": 1,
-              "max": 24,
-              "hidden": "data.type !== 'washingmachine'"
-            },
-            {
-              "type": "number",
-              "attr": "minRuntimeMinutes",
-              "label": "Min Runtime (minutes)",
-              "tooltip": "Minimum runtime before device can be considered finished",
-              "default": 110,
-              "min": 1,
-              "max": 600
-            },
-            {
-              "type": "number",
-              "attr": "zeroGraceMinutes",
-              "label": "Zero Power Grace (minutes)",
-              "tooltip": "Time to wait at zero power before considering device finished",
-              "default": 10,
-              "min": 1,
-              "max": 60
-            },
-            {
-              "type": "number",
-              "attr": "postConfirmMinutes",
-              "label": "Post Confirmation (minutes)",
-              "tooltip": "Additional confirmation time after zero power detection",
-              "default": 2,
-              "min": 1,
-              "max": 30
-            },
-            {
-              "type": "number",
-              "attr": "cooldownMinutes",
-              "label": "Cooldown (minutes)",
-              "tooltip": "Cooldown period after device finishes before new start detection",
-              "default": 10,
-              "min": 1,
-              "max": 120
-            },
-            {
-              "type": "number",
-              "attr": "dryReminderMinutes",
-              "label": "Dry Reminder (minutes)",
-              "tooltip": "Time after finish to send drying reminder (dishwasher only)",
-              "default": 45,
-              "min": 10,
-              "max": 480
-            }
-          ]
-        }
-      }
+      "label": "Tibber",
+      "#include": "tibber.json"
     },
-    "washingPrograms": {
-      "type": "table",
-      "label": "Washing Programs",
-      "tooltip": "Configure available washing programs, their duration (minutes), and default dryer usage.",
-      "items": [
-        {
-          "type": "text",
-          "attr": "program",
-          "label": "Program",
-          "tooltip": "Program name or temperature (e.g. 60, 40, 30)"
-        },
-        {
-          "type": "number",
-          "attr": "duration",
-          "label": "Duration (min)",
-          "tooltip": "Duration of the washing program in minutes",
-          "min": 1,
-          "max": 600,
-          "default": 120
-        },
-        {
-          "type": "checkbox",
-          "attr": "withDryer",
-          "label": "Default: Dryer after washing",
-          "tooltip": "Should the dryer run after this program by default?",
-          "default": false
-        }
-      ],
-      "default": [{ "program": "30", "duration": 120, "withDryer": false }]
+    "notification": {
+      "type": "panel",
+      "label": "Notifications",
+      "#include": "notification.json"
     },
-    "dryerDuration": {
-      "type": "number",
-      "label": "Dryer Duration (min)",
-      "tooltip": "Default duration for the dryer after washing (minutes)",
-      "default": 180,
-      "min": 1,
-      "max": 600
+    "todoist": {
+      "type": "panel",
+      "label": "Todoist",
+      "#include": "todoist.json"
+    },
+    "dishwasher": {
+      "type": "panel",
+      "label": "Dishwasher",
+      "#include": "dishwasher.json"
+    },
+    "washing_machine": {
+      "type": "panel",
+      "label": "Washing Machine",
+      "#include": "washing_machine.json"
     }
   }
 }

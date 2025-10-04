@@ -1,0 +1,25 @@
+{
+  "items": {
+    "_tibberInfo": {
+      "type": "header",
+      "size": 4,
+      "style": {
+        "marginTop": 20
+      },
+      "text": "Tibber Setup Instructions"
+    },
+    "tibberEnabled": {
+      "type": "checkbox",
+      "label": "Enable Tibber Integration",
+      "tooltip": "Enable automatic energy price optimization using Tibber data",
+      "default": true
+    },
+    "tibberHome": {
+      "disabled": "!data.tibberEnabled",
+      "type": "text",
+      "newLine": true,
+      "label": "Tibber Home ID",
+      "tooltip": "Your Tibber Home ID for price data access"
+    }
+  }
+}

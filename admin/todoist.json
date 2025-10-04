@@ -1,0 +1,45 @@
+{
+  "items": {
+    "_todoistInfo": {
+      "type": "header",
+      "size": 4,
+      "style": {
+        "marginTop": 20
+      },
+      "text": "ToDoist Setup"
+    },
+    "todoistEnabled": {
+      "type": "checkbox",
+      "label": "Enable ToDoist task creation",
+      "tooltip": "Enable task creation in ToDoist for finished appliances",
+      "default": false
+    },
+    "todoistInstance": {
+      "disabled": "!data.todoistEnabled",
+      "type": "instance",
+      "newLine": true,
+      "adapter": "todoist2",
+      "label": "Select ToDoist Instance"
+    },
+    "todoistProjectId": {
+      "disabled": "!data.todoistEnabled",
+      "type": "text",
+      "label": "ToDoist Project ID",
+      "tooltip": "Target project ID in ToDoist"
+    },
+    "todoistSectionId": {
+      "disabled": "!data.todoistEnabled",
+      "type": "text",
+      "label": "ToDoist Section ID (optional)",
+      "tooltip": "Optional section ID within the project"
+    },
+    "todoistPriority": {
+      "disabled": "!data.todoistEnabled",
+      "type": "number",
+      "label": "Priority (1-4)",
+      "default": 2,
+      "min": 1,
+      "max": 4
+    }
+  }
+}

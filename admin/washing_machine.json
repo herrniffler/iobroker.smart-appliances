@@ -1,0 +1,112 @@
+{
+  "items": {
+    "_washing_machines": {
+      "type": "panel",
+      "label": "Washing machines",
+      "items": {
+        "devices": {
+          "type": "table",
+          "label": "Configured Washing machines",
+          "items": [
+            {
+              "type": "text",
+              "attr": "id",
+              "label": "Device ID",
+              "tooltip": "Unique identifier for this device",
+              "placeholder": "washing_machine_1"
+            },
+            {
+              "type": "text",
+              "attr": "name",
+              "label": "Device Name",
+              "tooltip": "Human-readable name for this device",
+              "placeholder": "Washing Machine"
+            },
+            {
+              "type": "checkbox",
+              "attr": "enabled",
+              "label": "Enabled",
+              "default": true
+            },
+            {
+              "type": "objectId",
+              "attr": "powerStateId",
+              "label": "Power State ID",
+              "tooltip": "State ID for power measurement (Watts)",
+              "filter": {
+                "type": "state",
+                "common": {
+                  "type": "number"
+                }
+              }
+            },
+            {
+              "type": "objectId",
+              "attr": "switchStateId",
+              "label": "Switch State ID",
+              "tooltip": "State ID for switching the device on/off",
+              "filter": {
+                "type": "state",
+                "common": {
+                  "type": "boolean"
+                }
+              }
+            },
+            {
+              "type": "objectId",
+              "attr": "pressStateId",
+              "label": "Press State ID",
+              "tooltip": "State ID for start button press",
+              "filter": {
+                "type": "state",
+                "common": {
+                  "type": "boolean"
+                }
+              }
+            },
+            {
+              "type": "number",
+              "attr": "powerThreshold",
+              "label": "Power Threshold (W)",
+              "tooltip": "Minimum power consumption to consider device as running",
+              "default": 0.5,
+              "min": 0,
+              "max": 100,
+              "step": 0.1
+            }
+          ]
+        }
+      }
+    },
+    "washingPrograms": {
+      "type": "table",
+      "label": "Washing Programs",
+      "tooltip": "Configure available washing programs, their duration (minutes), and default dryer usage.",
+      "items": [
+        {
+          "type": "text",
+          "attr": "program",
+          "label": "Program",
+          "tooltip": "Program name or temperature (e.g. 60, 40, 30)"
+        },
+        {
+          "type": "number",
+          "attr": "duration",
+          "label": "Duration (min)",
+          "tooltip": "Duration of the washing program in minutes",
+          "min": 1,
+          "max": 600,
+          "default": 120
+        },
+        {
+          "type": "checkbox",
+          "attr": "withDryer",
+          "label": "Default: Dryer after washing",
+          "tooltip": "Should the dryer run after this program by default?",
+          "default": false
+        }
+      ],
+      "default": [{ "program": "30", "duration": 120, "withDryer": false }]
+    }
+  }
+}

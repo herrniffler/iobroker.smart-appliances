@@ -1,0 +1,25 @@
+{
+  "items": {
+    "_telegramInfo": {
+      "type": "header",
+      "size": 4,
+      "style": {
+        "marginTop": 20
+      },
+      "text": "Telegram Setup Instructions"
+    },
+    "telegramEnabled": {
+      "type": "checkbox",
+      "label": "Enable Telegram notifications",
+      "tooltip": "Enable notifications via Telegram",
+      "default": true
+    },
+    "telegramInstance": {
+      "disabled": "!data.telegramEnabled",
+      "type": "instance",
+      "newLine": true,
+      "adapter": "telegram",
+      "label": "Select Telegram Instance"
+    }
+  }
+}
