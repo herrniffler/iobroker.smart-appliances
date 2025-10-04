@@ -2,6 +2,8 @@
   "common": {
     "name": "smart-appliances",
     "version": "0.1.0",
+    "licenseInformation": { "license": "MIT" },
+    "tier": 1,
     "news": {
       "0.1.0": {
         "en": "Initial release",
@@ -56,7 +58,73 @@
     "messagebox": true
   },
   "native": {
-    "devices": [],
+    "devices": {
+      "type": "array",
+      "title": "Devices",
+      "description": "List of devices managed by this adapter. Each device can have type-specific settings.",
+      "default": [],
+      "items": {
+        "oneOf": [
+          {
+            "title": "Dishwasher",
+            "type": "object",
+            "properties": {
+              "enabled": { "type": "boolean", "default": true },
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "type": { "const": "dishwasher" },
+              "powerStateId": { "type": "string" },
+              "switchStateId": { "type": "string" },
+              "powerThreshold": { "type": "number", "default": 0.5 },
+              "detectTimeSeconds": { "type": "number", "default": 10 },
+              "requiredMinutes": { "type": "number", "default": 120 },
+              "minRuntimeMinutes": { "type": "number", "default": 110 },
+              "zeroGraceMinutes": { "type": "number", "default": 10 },
+              "postConfirmMinutes": { "type": "number", "default": 2 },
+              "cooldownMinutes": { "type": "number", "default": 10 },
+              "dryReminderMinutes": { "type": "number", "default": 45 }
+            },
+            "required": ["id","name","type"]
+          },
+          {
+            "title": "Washing Machine",
+            "type": "object",
+            "properties": {
+              "enabled": { "type": "boolean", "default": true },
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "type": { "const": "washingmachine" },
+              "powerStateId": { "type": "string" },
+              "switchStateId": { "type": "string" },
+              "startTriggerStateId": { "type": "string" },
+              "startTriggerDelayMs": { "type": "number", "default": 5000 },
+              "powerThreshold": { "type": "number", "default": 0.5 },
+              "requiredMinutes": { "type": "number", "default": 120 },
+              "minRuntimeMinutes": { "type": "number", "default": 10 },
+              "postConfirmMinutes": { "type": "number", "default": 1 },
+              "transferBufferMinutes": { "type": "number", "default": 10 },
+              "dryerDuration": { "type": "number", "default": 180 }
+            },
+            "required": ["id","name","type"]
+          },
+          {
+            "title": "Dryer",
+            "type": "object",
+            "properties": {
+              "enabled": { "type": "boolean", "default": true },
+              "id": { "type": "string" },
+              "name": { "type": "string" },
+              "type": { "const": "dryer" },
+              "powerStateId": { "type": "string" },
+              "switchStateId": { "type": "string" },
+              "powerThreshold": { "type": "number", "default": 0.5 },
+              "requiredMinutes": { "type": "number", "default": 180 }
+            },
+            "required": ["id","name","type"]
+          }
+        ]
+      }
+    },
     "tibberEnabled": true,
     "tibberHome": "",
     "telegramEnabled": true,
@@ -74,10 +142,8 @@
     "dryerDuration": {
       "type": "number",
       "default": 180,
-      "description": "Default dryer duration in minutes."
-    },
-    "startTriggerStateId": "",
-    "startTriggerDelayMs": 5000
+      "description": "Default dryer duration in minutes. Can be overridden per device."
+    }
   },
   "objects": [],
   "instanceObjects": [

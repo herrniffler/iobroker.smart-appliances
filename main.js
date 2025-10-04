@@ -107,7 +107,7 @@ class SmartAppliances extends utils.Adapter {
      * Start monitoring all devices
      */
     async startDeviceMonitoring() {
-        for (const [deviceId, device] of this.devices) {
+        for (const device of this.devices.values()) {
             await device.startMonitoring();
         }
     }
@@ -120,13 +120,13 @@ class SmartAppliances extends utils.Adapter {
             this.log.info("Shutting down Smart Appliances Adapter...");
 
             // Clear all timers
-            for (const [key, timer] of this.timers) {
+            for (const timer of this.timers.values()) {
                 clearTimeout(timer);
             }
             this.timers.clear();
 
             // Stop all devices
-            for (const [deviceId, device] of this.devices) {
+            for (const device of this.devices.values()) {
                 device.stop();
             }
 
@@ -144,7 +144,7 @@ class SmartAppliances extends utils.Adapter {
         if (state) {
             this.log.debug(`State ${id} change triggered: ${state.val} (ack = ${state.ack})`);
             // Immer weiterleiten an Devices (auch manuelle Änderungen), Devices unterscheiden über ack
-            for (const [deviceId, device] of this.devices) {
+            for (const device of this.devices.values()) {
                 if (device.handlesState(id)) {
                     device.onStateChange(id, state);
                     break;
@@ -294,69 +294,6 @@ class SmartAppliances extends utils.Adapter {
         } catch (error) {
             throw new Error(`Failed to parse Tibber data: ${error.message}`);
         }
-    }
-
-    /**
-     * Find cheapest consecutive hours
-     */
-    findCheapestConsecutiveHours(prices, requiredHours) {
-        if (!prices || prices.length < requiredHours) {
-            throw new Error("Not enough price data available");
-        }
-
-        let bestBlock = null;
-        let lowestAvgPrice = Infinity;
-
-        const currentTime = new Date();
-        const futureStartIndex = prices.findIndex(entry => {
-            const entryTime = new Date(entry.startsAt);
-            return entryTime > currentTime;
-        });
-
-        if (futureStartIndex === -1 || futureStartIndex + requiredHours > prices.length) {
-            throw new Error("No valid future time windows available");
-        }
-
-        for (let i = futureStartIndex; i <= prices.length - requiredHours; i++) {
-            let totalPrice = 0;
-            let validBlock = true;
-
-            for (let j = 0; j < requiredHours; j++) {
-                const currentEntry = prices[i + j];
-                totalPrice += currentEntry.total;
-
-                if (j > 0) {
-                    const prevTime = new Date(prices[i + j - 1].startsAt);
-                    const currTime = new Date(currentEntry.startsAt);
-                    const timeDiff = (currTime - prevTime) / (1000 * 60 * 60);
-
-                    if (timeDiff !== 1) {
-                        validBlock = false;
-                        break;
-                    }
-                }
-            }
-
-            if (validBlock) {
-                const avgPrice = totalPrice / requiredHours;
-                if (avgPrice < lowestAvgPrice) {
-                    lowestAvgPrice = avgPrice;
-                    bestBlock = {
-                        startIndex: i,
-                        startTime: new Date(prices[i].startsAt),
-                        endTime: new Date(prices[i + requiredHours - 1].startsAt),
-                        avgPrice: avgPrice,
-                        prices: prices.slice(i, i + requiredHours)
-                    };
-                }
-            }
-        }
-
-        if (!bestBlock) {
-            throw new Error("No valid consecutive cheap hours found");
-        }
-
-        return bestBlock;
     }
 
     /**
